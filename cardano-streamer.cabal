@@ -22,6 +22,7 @@ library
                      , Cardano.Streamer.Benchmark
                      , Cardano.Streamer.BlockInfo
                      , Cardano.Streamer.Inspection
+                     , Cardano.Streamer.Conformance
                      , Cardano.Streamer.Ledger
                      , Cardano.Streamer.LedgerState
                      , Cardano.Streamer.Measure

@@ -28,6 +28,7 @@ import qualified Cardano.Ledger.Conway.Rules as Conway
 import Cardano.Ledger.Credential
 import Cardano.Ledger.MemoBytes
 import Cardano.Ledger.Plutus.Language
+import Cardano.Ledger.Shelley.API (ApplyTx (..))
 import Cardano.Ledger.Shelley.LedgerState (NewEpochState)
 import Cardano.Ledger.Shelley.Rewards (aggregateRewards)
 import qualified Cardano.Ledger.Shelley.Rules as Shelley
@@ -96,6 +97,7 @@ class
   , ToCBOR (NewEpochState era)
   , EncCBOR (NewEpochState era)
   , AnyEraTx era
+  , ApplyTx era
   ) =>
   EraApp era
   where

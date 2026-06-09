@@ -16,6 +16,7 @@ import Cardano.Ledger.Address
 import Cardano.Ledger.BaseTypes (EpochNo (..), SlotNo (..), TxIx (..))
 import Cardano.Streamer.Benchmark
 import Cardano.Streamer.Common
+import Cardano.Streamer.Conformance (doConformanceTesting)
 import Cardano.Streamer.Inspection
 import Cardano.Streamer.LedgerState
 import Cardano.Streamer.Producer
@@ -28,6 +29,7 @@ import Criterion.Measurement (initializeTime)
 import Data.Char (toLower)
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map.Strict as Map
+import Ouroboros.Consensus.Node.ProtocolInfo (ProtocolInfo (..), pInfoConfig)
 import Ouroboros.Consensus.Storage.ChainDB as ChainDB
 import Ouroboros.Consensus.Storage.LedgerDB.Snapshots (DiskSnapshot (..))
 import RIO.Directory (createDirectoryIfMissing, doesDirectoryExist, doesPathExist, listDirectory)
@@ -57,6 +59,13 @@ replayEpochStats = do
   writeReport "EpochStats" epochStats
   writeNamedCsv "EpochStats" (epochStatsToNamedCsv epochStats)
   logInfo $ "Final summary: \n    " <> display (fold $ unEpochStats epochStats)
+
+runConformance :: RIO App ()
+runConformance =
+  runConduit $ do
+    app <- ask
+    sourceBlocksWithInspector_ (SlotInspector slotWithBlockInspection)
+      .| foldlC (doConformanceTesting (pInfoConfig $ dsAppProtocolInfo app)) ()
 
 replayRewards :: NE.NonEmpty AccountAddress -> RIO App ()
 replayRewards accounts = do
@@ -200,6 +209,7 @@ runApp Opts{..} = do
             writeStreamerHeader
             case oCommand of
               Replay -> replayChain
+              Conformance -> runConformance
               Benchmark -> replayBenchmarkReport
               Stats -> replayEpochStats
               ComputeRewards accountIds -> do

@@ -179,6 +179,10 @@ commandParser =
         <> command "replay" (info (pure Replay) (progDesc "Replay the chain"))
     )
     <|> subparser
+      ( metavar "conformance"
+          <> command "conformance" (info (pure Replay) (progDesc "Run formal spec"))
+      )
+    <|> subparser
       ( metavar "benchmark"
           <> command
             "benchmark"

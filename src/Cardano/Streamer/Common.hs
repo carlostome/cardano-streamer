@@ -241,6 +241,7 @@ instance HasResourceRegistry AppConfig where
 
 data Command
   = Replay
+  | Conformance
   | Benchmark
   | Stats
   | ComputeRewards (NonEmpty AccountAddress)
@@ -250,6 +251,7 @@ instance Display Command where
   display = \case
     Replay -> "Replay"
     Benchmark -> "Benchmark"
+    Conformance -> "Conformance"
     Stats -> "Compute Statistics"
     ComputeRewards _xs -> "Compute Rewards" -- for: " <> intersperce "," (map displayShow xs)
 
