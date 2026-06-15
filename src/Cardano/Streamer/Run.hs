@@ -16,7 +16,7 @@ import Cardano.Ledger.Address
 import Cardano.Ledger.BaseTypes (EpochNo (..), SlotNo (..), TxIx (..))
 import Cardano.Streamer.Benchmark
 import Cardano.Streamer.Common
-import Cardano.Streamer.Conformance (doConformanceTesting)
+import Cardano.Streamer.Conformance (doConformance)
 import Cardano.Streamer.Inspection
 import Cardano.Streamer.LedgerState
 import Cardano.Streamer.Producer
@@ -61,11 +61,12 @@ replayEpochStats = do
   logInfo $ "Final summary: \n    " <> display (fold $ unEpochStats epochStats)
 
 runConformance :: RIO App ()
-runConformance =
-  runConduit $ do
-    app <- ask
-    sourceBlocksWithInspector_ (SlotInspector slotWithBlockInspection)
-      .| foldlC (doConformanceTesting (pInfoConfig $ dsAppProtocolInfo app)) ()
+runConformance = do
+  logInfo
+    "Running conformance"
+  runConduit $
+    do sourceBlocksWithInspector_ (SlotInspector slotWithBlockInspection)
+      .| doConformance
 
 replayRewards :: NE.NonEmpty AccountAddress -> RIO App ()
 replayRewards accounts = do

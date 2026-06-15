@@ -62,6 +62,8 @@ library
                      , cardano-ledger-core >= 1.19
                      , cardano-ledger-shelley
                      , cardano-ledger-conway >= 1.18.1
+                     , cardano-ledger-conformance
+                     , cardano-ledger-test
                      , cardano-protocol-tpraos
                      , cardano-slotting
                      , cassava

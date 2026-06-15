@@ -180,7 +180,7 @@ commandParser =
     )
     <|> subparser
       ( metavar "conformance"
-          <> command "conformance" (info (pure Replay) (progDesc "Run formal spec"))
+          <> command "conformance" (info (pure Conformance) (progDesc "Run formal spec"))
       )
     <|> subparser
       ( metavar "benchmark"
