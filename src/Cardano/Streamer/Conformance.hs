@@ -24,10 +24,10 @@ import Ouroboros.Consensus.Config (TopLevelConfig (..))
 doConformanceTesting ::
   TopLevelConfig (CardanoBlock StandardCrypto) ->
   SlotWithBlock ->
-  Bool
+  [String]
 doConformanceTesting cnf swb =
   applyTickedNewEpochStateWithTxs
-    (\_ _ -> True)
+    (\_ _ -> ["Success"])
     doStuff
     (swbTickExtLedgerState swb)
     (biBlockComponent (swbBlockWithInfo swb))
@@ -37,7 +37,7 @@ doConformanceTesting cnf swb =
       EraApp era =>
       Shelley.NewEpochState era ->
       [Tx TopTx era] ->
-      Bool
+      [String]
     doStuff nes txs = go st txs
       where
         env :: Shelley.MempoolEnv era
@@ -49,10 +49,10 @@ doConformanceTesting cnf swb =
         st :: Shelley.MempoolState era
         st = Shelley.mkMempoolState nes
 
-        go :: Shelley.MempoolState era -> [Tx TopTx era] -> Bool
-        go _ [] = True
+        go :: Shelley.MempoolState era -> [Tx TopTx era] -> [String]
+        go _ [] = ["Success"]
         go st (tx : txs) =
           let st' = Shelley.applyTxValidation @era ValidateAll globals env st tx
            in case st' of
-                Left err -> False
-                Right (st', _) -> go st' txs
+                Left err -> [show err]
+                Right (st', _) -> "Success" : go st' txs
