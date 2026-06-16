@@ -14,24 +14,20 @@ import Cardano.Ledger.Api.Tx
 import Cardano.Ledger.Core
 import qualified Cardano.Ledger.Shelley.API as Shelley
 import Cardano.Streamer.BlockInfo
-import Cardano.Streamer.Common
 import Cardano.Streamer.Inspection
 import Cardano.Streamer.Ledger
 import Cardano.Streamer.LedgerState
-import Control.State.Transition.Extended (ValidationPolicy (ValidateNone))
+import Control.State.Transition.Extended (ValidationPolicy (..))
 import Ouroboros.Consensus.Cardano.Block hiding (TxId)
 import Ouroboros.Consensus.Config (TopLevelConfig (..))
 
-type Stats = ()
-
 doConformanceTesting ::
   TopLevelConfig (CardanoBlock StandardCrypto) ->
-  Stats ->
   SlotWithBlock ->
-  Stats
-doConformanceTesting cnf _ swb =
+  Bool
+doConformanceTesting cnf swb =
   applyTickedNewEpochStateWithTxs
-    (\_ _ -> ())
+    (\_ _ -> True)
     doStuff
     (swbTickExtLedgerState swb)
     (biBlockComponent (swbBlockWithInfo swb))
@@ -41,8 +37,8 @@ doConformanceTesting cnf _ swb =
       EraApp era =>
       Shelley.NewEpochState era ->
       [Tx TopTx era] ->
-      Stats
-    doStuff nes txs = const () (foldl' go st txs)
+      Bool
+    doStuff nes txs = go st txs
       where
         env :: Shelley.MempoolEnv era
         env = Shelley.mkMempoolEnv nes (biSlotNo (swbBlockWithInfo swb))
@@ -53,9 +49,10 @@ doConformanceTesting cnf _ swb =
         st :: Shelley.MempoolState era
         st = Shelley.mkMempoolState nes
 
-        go :: Shelley.MempoolState era -> Tx TopTx era -> Shelley.MempoolState era
-        go st tx =
-          fst $
-            fromRight
-              (error "Validation error")
-              (Shelley.applyTxValidation @era ValidateNone globals env st tx)
+        go :: Shelley.MempoolState era -> [Tx TopTx era] -> Bool
+        go _ [] = True
+        go st (tx : txs) =
+          let st' = Shelley.applyTxValidation @era ValidateAll globals env st tx
+           in case st' of
+                Left err -> False
+                Right (st', _) -> go st' txs

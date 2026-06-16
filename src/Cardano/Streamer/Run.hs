@@ -65,7 +65,8 @@ runConformance =
   runConduit $ do
     app <- ask
     sourceBlocksWithInspector_ (SlotInspector slotWithBlockInspection)
-      .| foldlC (doConformanceTesting (pInfoConfig $ dsAppProtocolInfo app)) ()
+      .| mapC (doConformanceTesting (pInfoConfig $ dsAppProtocolInfo app))
+      .| printC
 
 replayRewards :: NE.NonEmpty AccountAddress -> RIO App ()
 replayRewards accounts = do
